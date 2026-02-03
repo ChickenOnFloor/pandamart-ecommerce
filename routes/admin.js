@@ -132,8 +132,6 @@ router.patch('/users/:id/role', auth, role('admin'), async (req, res) => {
   }
 })
 
-
-// Get admin stats
 router.get('/stats', auth, role('admin'), async (req, res) => {
   try {
     const totalUsers = await User.countDocuments();
