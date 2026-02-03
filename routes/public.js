@@ -5,7 +5,7 @@ const router = express.Router()
 
 router.get('/products', async (req, res) => {
   const { minPrice, maxPrice, inStock, sort } = req.query
-  const query = { approved: true }
+  const query = { isApproved: true }
 
   if (inStock === 'true') query.stock = { $gt: 0 }
   if (minPrice || maxPrice) {
@@ -25,7 +25,7 @@ router.get('/products', async (req, res) => {
 router.get('/products/:id', async (req, res) => {
   const product = await Product.findOne({
     _id: req.params.id,
-    approved: true,
+    isApproved: true,
   }).populate('seller', 'username')
 
   if (!product) return res.status(404).json({ message: 'Not found' })
