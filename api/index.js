@@ -30,6 +30,7 @@ app.use('/api/products', require('../routes/products'));
 app.use('/api/cart', require('../routes/cart'));
 app.use('/api/orders', require('../routes/orders'));
 app.use('/api/seller', require('../routes/seller'));
+app.use('/api/public', require('../routes/public'));
 app.use('/api/admin', require('../routes/admin'));
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
