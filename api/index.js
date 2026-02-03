@@ -1,8 +1,8 @@
 require('dotenv').config()
 const express = require('express');
-const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
+const { connectDB } = require('../config/db');
 
 // Create Express app
 const app = express();
@@ -17,30 +17,14 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 
-// Connect to MongoDB
-// In Vercel, we should handle DB connection differently
-let dbConnected = false;
-
-async function connectDB() {
-  if (!dbConnected) {
-    try {
-      await mongoose.connect(process.env.MONGO_URI);
-      console.log('MongoDB connected');
-      dbConnected = true;
-    } catch (err) {
-      console.error('MongoDB connection error:', err);
-      throw err;
-    }
-  }
-}
-
 // Middleware to ensure DB connection
 app.use(async (req, res, next) => {
   try {
     await connectDB();
     next();
   } catch (err) {
-    res.status(500).json({ error: 'Database connection failed' });
+    console.error('Database connection failed:', err);
+    res.status(500).json({ error: 'Database connection failed', details: err.message });
   }
 });
 
@@ -63,7 +47,8 @@ module.exports = app;
 // Only start server if running directly (not in Vercel)
 if (require.main === module) {
   const PORT = process.env.PORT || 5000;
-  app.listen(PORT, () => {
+  app.listen(PORT, async () => {
+    await connectDB();
     console.log(`Server running on port ${PORT}`);
   });
 }
