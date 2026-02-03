@@ -6,23 +6,32 @@ const auth = require('../middleware/auth')
 
 const router = express.Router()
 
+const COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: true,
+  sameSite: 'none',
+  path: '/',
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+}
+
 router.post('/register', async (req, res) => {
   const { name, email, password } = req.body
+
   const hashed = await bcrypt.hash(password, 10)
-  const user = await User.create({ username: name, email, password: hashed })
-  
+  const user = await User.create({
+    username: name,
+    email,
+    password: hashed,
+  })
+
   const token = jwt.sign(
     { id: user._id, role: user.role },
     process.env.JWT_SECRET,
     { expiresIn: '7d' }
   )
 
-  res.cookie('token', token, { 
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-    maxAge: 7 * 24 * 60 * 60 * 1000
-  })
+  res.cookie('token', token, COOKIE_OPTIONS)
+
   res.status(201).json({
     id: user._id.toString(),
     email: user.email,
@@ -33,9 +42,11 @@ router.post('/register', async (req, res) => {
 
 router.post('/login', async (req, res) => {
   const { email, password } = req.body
+
   const user = await User.findOne({ email })
-  if (!user || !(await bcrypt.compare(password, user.password)))
+  if (!user || !(await bcrypt.compare(password, user.password))) {
     return res.status(401).json({ message: 'Invalid credentials' })
+  }
 
   const token = jwt.sign(
     { id: user._id, role: user.role },
@@ -43,12 +54,8 @@ router.post('/login', async (req, res) => {
     { expiresIn: '7d' }
   )
 
-  res.cookie('token', token, { 
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-    maxAge: 7 * 24 * 60 * 60 * 1000
-  })
+  res.cookie('token', token, COOKIE_OPTIONS)
+
   res.json({
     id: user._id.toString(),
     email: user.email,
@@ -59,34 +66,29 @@ router.post('/login', async (req, res) => {
 
 router.post('/logout', (req, res) => {
   res.clearCookie('token', {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+    ...COOKIE_OPTIONS,
+    maxnmaxAge: undefined,
   })
+
   res.json({ message: 'Logged out' })
 })
 
 router.get('/me', auth, async (req, res) => {
-  try {
-    if (!req.user || !req.user.id) {
-      return res.status(401).json({ message: 'Authentication required' })
-    }
-    
-    const user = await User.findById(req.user.id).select('-password')
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' })
-    }
-    
-    res.json({
-      id: user._id.toString(),
-      email: user.email,
-      name: user.username,
-      role: user.role,
-    })
-  } catch (err) {
-    console.error('Error in /me endpoint:', err)
-    res.status(500).json({ message: 'Server error', error: err.message })
+  if (!req.user?.id) {
+    return res.status(401).json({ message: 'Unauthorized' })
   }
+
+  const user = await User.findById(req.user.id).select('-password')
+  if (!user) {
+    return res.status(404).json({ message: 'User not found' })
+  }
+
+  res.json({
+    id: user._id.toString(),
+    email: user.email,
+    name: user.username,
+    role: user.role,
+  })
 })
 
 module.exports = router
