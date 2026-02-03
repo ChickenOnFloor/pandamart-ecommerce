@@ -4,10 +4,8 @@ const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const { connectDB } = require('../config/db');
 
-// Create Express app
 const app = express();
 
-// Middleware
 app.use(
   cors({
     origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
@@ -17,7 +15,6 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 
-// Middleware to ensure DB connection
 app.use(async (req, res, next) => {
   try {
     await connectDB();
@@ -28,7 +25,6 @@ app.use(async (req, res, next) => {
   }
 });
 
-// Import routes
 app.use('/api/auth', require('../routes/auth'));
 app.use('/api/products', require('../routes/products'));
 app.use('/api/cart', require('../routes/cart'));

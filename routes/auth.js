@@ -65,10 +65,16 @@ router.post('/logout', (req, res) => {
 
 router.get('/me', auth, async (req, res) => {
   try {
+    // Check if req.user.id exists (decoded from JWT)
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ message: 'Authentication required' })
+    }
+    
     const user = await User.findById(req.user.id).select('-password')
     if (!user) {
       return res.status(404).json({ message: 'User not found' })
     }
+    
     res.json({
       id: user._id.toString(),
       email: user.email,
@@ -76,7 +82,8 @@ router.get('/me', auth, async (req, res) => {
       role: user.role,
     })
   } catch (err) {
-    res.status(500).json({ message: 'Server error' })
+    console.error('Error in /me endpoint:', err)
+    res.status(500).json({ message: 'Server error', error: err.message })
   }
 })
 
