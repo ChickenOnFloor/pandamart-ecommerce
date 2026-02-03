@@ -142,6 +142,24 @@ router.delete('/products/:id', auth, role('seller', 'admin'), async (req, res) =
   }
 })
 
+// New stats endpoint for seller dashboard
+router.get('/stats', auth, role('seller', 'admin'), async (req, res) => {
+  try {
+    const products = await Product.find({ seller: req.user.id })
+    
+    const totalProducts = products.length
+    const approvedProducts = products.filter(p => p.approved).length
+    const pendingProducts = totalProducts - approvedProducts
+
+    res.json({
+      totalProducts,
+      approvedProducts,
+      pendingProducts
+    })
+  } catch (err) {
+    res.status(500).json({ message: err.message })
+  }
+})
 
 router.get('/dashboard', auth, role('seller', 'admin'), async (req, res) => {
   try {
