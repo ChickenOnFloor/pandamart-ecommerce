@@ -133,4 +133,21 @@ router.patch('/users/:id/role', auth, role('admin'), async (req, res) => {
 })
 
 
+// Get admin stats
+router.get('/stats', auth, role('admin'), async (req, res) => {
+  try {
+    const totalUsers = await User.countDocuments();
+    const totalProducts = await Product.countDocuments();
+    const pendingApprovals = await Product.countDocuments({ approved: false });
+    
+    res.json({
+      totalUsers,
+      totalProducts,
+      pendingApprovals,
+    });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 module.exports = router
