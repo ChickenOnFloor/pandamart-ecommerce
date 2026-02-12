@@ -13,6 +13,11 @@ router.get('/products', async (req, res) => {
     if (minPrice) query.price.$gte = minPrice
     if (maxPrice) query.price.$lte = maxPrice
   }
+  
+  // Add support for filtering by seller
+  if (req.query.sellerId) {
+    query.seller = req.query.sellerId;
+  }
 
   let q = Product.find(query).populate('seller', 'username')
   if (sort === 'price_asc') q = q.sort({ price: 1 })
