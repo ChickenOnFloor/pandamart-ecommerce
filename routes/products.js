@@ -34,10 +34,10 @@ router.get('/', async (req, res) => {
       stock: p.stock,
       category: p.category,
       image: p.image,
-      sellerId: p.seller._id.toString(),
-      seller: {
+      sellerId: p.seller ? p.seller._id.toString() : null,
+      seller: p.seller ? {
         name: p.seller.username
-      }
+      } : null
     }))
     
     res.json(transformedProducts)
@@ -64,10 +64,10 @@ router.get('/:id', async (req, res) => {
     stock: product.stock,
     category: product.category,
     image: product.image,
-    sellerId: product.seller._id.toString(),
-    seller: {
+    sellerId: product.seller ? product.seller._id.toString() : null,
+    seller: product.seller ? {
       name: product.seller.username
-    }
+    } : null
   })
 })
 
