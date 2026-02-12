@@ -25,6 +25,7 @@ router.get('/', async (req, res) => {
       filter.seller = sellerId
     }
     
+    // For public route, don't require authentication
     const products = await Product.find(filter).populate('seller', 'username')
     const transformedProducts = products.map(p => ({
       id: p._id.toString(),

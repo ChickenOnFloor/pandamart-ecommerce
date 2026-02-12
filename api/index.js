@@ -6,9 +6,7 @@ const { connectDB } = require('../config/db');
 const app = express();
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN ? 
-      process.env.CORS_ORIGIN.split(',') : 
-      ['http://localhost:3000', 'http://localhost:3001'],
+    origin: process.env.CORS_ORIGIN,
     credentials: true,
   })
 );
@@ -26,6 +24,7 @@ app.use(async (req, res, next) => {
 });
 
 app.use('/api/auth', require('../routes/auth'));
+app.use('/api/public', require('../routes/public'));
 app.use('/api/products', require('../routes/products'));
 app.use('/api/cart', require('../routes/cart'));
 app.use('/api/orders', require('../routes/orders'));
