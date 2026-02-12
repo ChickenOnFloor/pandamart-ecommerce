@@ -14,7 +14,6 @@ router.get('/products', async (req, res) => {
     if (maxPrice) query.price.$lte = maxPrice
   }
   
-  // Add support for filtering by seller
   if (req.query.sellerId) {
     query.seller = req.query.sellerId;
   }
